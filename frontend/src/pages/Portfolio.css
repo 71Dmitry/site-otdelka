@@ -1,0 +1,266 @@
+.portfolio-page {
+  padding: 40px 0;
+}
+
+/* фильтр */
+.portfolio-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin: 40px 0;
+}
+
+.portfolio-filter .filter-btn {
+  padding: 10px 25px;
+  border: 1px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.portfolio-filter .filter-btn:hover,
+.portfolio-filter .filter-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* сетка портфолио */
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+  margin: 50px 0;
+}
+
+.portfolio-item {
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  
+}
+
+.portfolio-item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.portfolio-image {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+}
+
+.portfolio-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.portfolio-item:hover .portfolio-image img {
+  transform: scale(1.1);
+}
+
+.portfolio-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  color: white;
+  padding: 20px;
+  transition: transform 0.3s ease;
+}
+
+.portfolio-item:hover .portfolio-overlay {
+  transform: translateY(0);
+}
+
+.portfolio-overlay .portfolio-category {
+  display: inline-block;
+  padding: 5px 10px;
+  background: var(--primary);
+  border-radius: 3px;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+.portfolio-overlay h3 {
+  margin-bottom: 5px;
+  font-size: 1.2rem;
+}
+
+.portfolio-overlay p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* модальное окно */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 10px;
+  max-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalFadeIn 0.3s ease;
+}
+.custom-btn {
+  color: white !important;
+  text-decoration: none !important;
+}
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--danger);
+  color: white;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-close:hover {
+  background: #d32f2f;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  padding: 30px;
+}
+
+.modal-image {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 300px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.modal-image img {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  display: block;
+}
+
+
+
+.modal-info h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  color: var(--dark);
+}
+
+.modal-location,
+.modal-year {
+  color: #666;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.modal-info h3 {
+  margin: 20px 0 10px;
+  color: var(--dark);
+}
+
+.works-list {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.works-list li {
+  padding: 8px 0;
+  padding-left: 25px;
+  position: relative;
+}
+
+.works-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-weight: bold;
+}
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+/* адаптивность */
+@media (max-width: 768px) {
+  .portfolio-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  .modal-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
+    margin: 20px;
+  }
+  
+  .modal-info h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .portfolio-filter {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .portfolio-filter .filter-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+  }
+}

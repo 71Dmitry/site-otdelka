@@ -1,0 +1,30 @@
+# Зависимости
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Логи
+*.log
+npm-debug.log*
+
+# Билды
+frontend/build/
+frontend/dist/
+
+# Файлы БД (если есть данные)
+*.db
+*.sqlite
+*.sqlite3
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Редакторы
+.vscode/
+.idea/
+
+# Переменные окружения
+.env
+.env.local
+.env.*.local
