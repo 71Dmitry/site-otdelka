@@ -65,9 +65,26 @@ const Home = () => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Площадь (м²)</label>
-                  <input type="number" className="form-control" value={calcData.area} onChange={(e) => setCalcData({...calcData, area: e.target.value})} min="1" />
-                </div>
+                <label>Площадь (м²)</label>
+                <input 
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="form-control"
+                  value={calcData.area}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d]/g, '');
+                    if (value === '') {
+                      setCalcData({...calcData, area: ''});
+                    } else {
+                      let num = parseInt(value, 10);
+                      if (num > 5000) num = 5000;
+                      if (num < 1) num = 1;
+                      setCalcData({...calcData, area: num});
+                    }
+                  }}
+                />
+              </div>
                 <div className="form-group">
                   <label>Тип ремонта</label>
                   <select className="form-control" value={calcData.serviceType} onChange={(e) => setCalcData({...calcData, serviceType: e.target.value})}>

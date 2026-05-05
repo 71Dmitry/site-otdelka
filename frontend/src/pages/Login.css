@@ -133,6 +133,15 @@
   align-items: center;
 }
 
+.terms-link {
+  color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.terms-link:hover {
+  color: var(--primary-dark);
+}
 /* адаптивность */
 @media (max-width: 768px) {
   .login-container {

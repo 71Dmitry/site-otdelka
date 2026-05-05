@@ -9,7 +9,6 @@ import {
   getAllCategories, addCategory, deleteCategory,
   getServiceTypes
 } from '../api';
-import Loader from '../components/Loader';
 import './Admin.css';
 
 const Admin = () => {
@@ -23,6 +22,7 @@ const Admin = () => {
   const [clients, setClients] = useState([]);
   const [categories, setCategories] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -48,7 +48,10 @@ const Admin = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.role !== 1) navigate('/');
-    else fetchAll();
+    else {
+      setCurrentUser(user);
+      fetchAll();
+    }
   }, [navigate]);
 
   // общие фукнции для форм
@@ -62,14 +65,19 @@ const Admin = () => {
     } catch (err) { alert(err.response?.data?.error || 'Мастер уже занят в это время!'); }
   };
 
-  const handleDelete = async (action, id, name) => {
+  const handleDelete = async (action, id, name, itemRole = null) => {
+    // Защита: админ не может удалить сам себя
+    if (currentUser && itemRole === 1 && currentUser.id === id) {
+      alert('Вы не можете удалить свой собственный аккаунт администратора');
+      return;
+    }
     if (window.confirm(`Удалить ${name}?`)) {
       await action(id);
       fetchAll();
     }
   };
 
-  if (loading) return <Loader />;
+  if (loading) return <div className="loader-container">Загрузка...</div>;
 
   return (
     <>
@@ -176,61 +184,85 @@ const Admin = () => {
               <table className="admin-table">
                 <thead><tr><th>ID</th><th>ФИО</th><th>Телефон</th><th>Email</th><th>Роль</th><th>Действия</th></tr></thead>
                 <tbody>
-                  {clients.map(c => (
-                    <tr key={c.id_c}>
-                      <td>#{c.id_c}</td><td>{c.ФИО}</td><td>{c.Телефон}</td><td>{c.Почта || '-'}</td><td>{c.id_r === 1 ? 'Админ' : c.id_r === 2 ? 'Мастер' : 'Клиент'}</td>
-                      <td><button onClick={() => setEditingItem(c)}>Изменить</button><button onClick={() => handleDelete(deleteClient, c.id_c, 'клиента')}>Удалить</button></td>
-                    </tr>
-                  ))}
+                  {clients.map(c => {
+                    // Проверка: является ли этот пользователь текущим админом
+                    const isSelf = currentUser && currentUser.id === c.id_c && currentUser.role === 1;
+                    return (
+                      <tr key={c.id_c}>
+                        <td>#{c.id_c}</td><td>{c.ФИО}</td><td>{c.Телефон}</td><td>{c.Почта || '-'}</td><td>{c.id_r === 1 ? 'Админ' : c.id_r === 2 ? 'Мастер' : 'Клиент'}</td>
+                        <td>
+                          <button onClick={() => setEditingItem(c)}>Изменить</button>
+                          {!isSelf && <button onClick={() => handleDelete(deleteClient, c.id_c, 'клиента', c.id_r)}>Удалить</button>}
+                          {isSelf && <button disabled style={{opacity:0.5}} title="Нельзя удалить себя">Удалить</button>}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               {editingItem && (
-                <form onSubmit={(e) => handleSubmit(e, editingItem.id_c ? updateClient : addClient, editingItem, editingItem.id_c)} className="admin-form">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  //админ не может понизить сам себя до клиента
+                  const isSelf = currentUser && currentUser.id === editingItem.id_c;
+                  const newRole = parseInt(editingItem.id_r);
+                  if (isSelf && newRole !== 1) {
+                    alert('Вы не можете понизить свой собственный аккаунт администратора до клиента');
+                    return;
+                  }
+                  handleSubmit(e, editingItem.id_c ? updateClient : addClient, editingItem, editingItem.id_c);
+                }} className="admin-form">
                   <input type="text" placeholder="ФИО" value={editingItem.ФИО || ''} onChange={e => setEditingItem({...editingItem, ФИО: e.target.value})} required />
                   <input type="tel" placeholder="Телефон" value={editingItem.Телефон || ''} onChange={e => setEditingItem({...editingItem, Телефон: e.target.value})} required />
                   <input type="email" placeholder="Email" value={editingItem.Почта || ''} onChange={e => setEditingItem({...editingItem, Почта: e.target.value})} />
-                  <input type="password" placeholder="Пароль (оставьте пустым, если не менять)" onChange={e => setEditingItem({...editingItem, Пароль: e.target.value})} />
-                  <select value={editingItem.id_r || 3} onChange={e => setEditingItem({...editingItem, id_r: e.target.value})}>
-                    <option value={1}>Администратор</option><option value={3}>Клиент</option>
-                  </select>
-                  <button type="submit">Сохранить</button><button type="button" onClick={() => setEditingItem(null)}>Отмена</button>
+                  <input type="password" placeholder="Пароль (можно не трогать)" onChange={e => setEditingItem({...editingItem, Пароль: e.target.value})} />
+                  {currentUser && currentUser.id === editingItem.id_c ? (
+                    <input type="text" value="Администратор" disabled style={{background:'#f0f0f0'}} />
+                  ) : (
+                    <select value={editingItem.id_r || 3} onChange={e => setEditingItem({...editingItem, id_r: e.target.value})}>
+                      <option value={1}>Администратор</option>
+                      <option value={3}>Клиент</option>
+                    </select>
+                  )}
+                  <button type="submit">Сохранить</button>
+                  <button type="button" onClick={() => setEditingItem(null)}>Отмена</button>
                 </form>
               )}
             </div>
           )}
 
           {activeTab === 'categories' && (
-  <div>
-    <h2>Управление категориями (для мастеров)</h2>
-    <form onSubmit={async (e) => {
-        e.preventDefault();
-        const name = e.target.categoryName.value;
-        if (!name) return;
-        try {
-            await addCategory(name);
-            e.target.categoryName.value = '';
-            fetchAll();
-        } catch (err) {
-            alert('Ошибка добавления категории');
-        }
-    }} className="admin-form">
-      <input type="text" name="categoryName" placeholder="Название категории" required />
-      <button type="submit">Добавить</button>
-    </form>
-    <table className="admin-table">
-      <thead><tr><th>ID</th><th>Название</th><th>Действия</th></tr></thead>
-      <tbody>
-        {categories.map(c => (
-          <tr key={c.id_k}>
-            <td>#{c.id_k}</td>
-            <td>{c.Наименование}</td>
-            <td><button onClick={() => handleDelete(deleteCategory, c.id_k, 'категорию')}>Удалить</button></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+            <div>
+              <h2>Управление категориями (для мастеров)</h2>
+              <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  const name = e.target.categoryName.value;
+                  if (!name) return;
+                  try {
+                      await addCategory(name);
+                      e.target.categoryName.value = '';
+                      fetchAll();
+                  } catch (err) {
+                      alert('Ошибка добавления категории');
+                  }
+              }} className="admin-form">
+                <input type="text" name="categoryName" placeholder="Название категории" required />
+                <button type="submit">Добавить</button>
+              </form>
+              <table className="admin-table">
+                <thead><tr><th>ID</th><th>Название</th><th>Действия</th></tr></thead>
+                <tbody>
+                  {categories.map(c => (
+                    <tr key={c.id_k}>
+                      <td>#{c.id_k}</td>
+                      <td>{c.Наименование}</td>
+                      <td><button onClick={() => handleDelete(deleteCategory, c.id_k, 'категорию')}>Удалить</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </>
