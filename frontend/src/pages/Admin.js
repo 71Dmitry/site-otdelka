@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import ActPDF from '../components/ActPDF';
 import {
   getAllBookings, addBooking, updateBooking, deleteBooking,
   getAllServicesAdmin, addService, updateService, deleteService,
@@ -23,6 +24,8 @@ const Admin = () => {
   const [categories, setCategories] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [currentPDFData, setCurrentPDFData] = useState(null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -54,7 +57,6 @@ const Admin = () => {
     }
   }, [navigate]);
 
-  // общие фукнции для форм
   const handleSubmit = async (e, action, data, id = null) => {
     e.preventDefault();
     try {
@@ -66,7 +68,6 @@ const Admin = () => {
   };
 
   const handleDelete = async (action, id, name, itemRole = null) => {
-    // Защита: админ не может удалить сам себя
     if (currentUser && itemRole === 1 && currentUser.id === id) {
       alert('Вы не можете удалить свой собственный аккаунт администратора');
       return;
@@ -76,6 +77,30 @@ const Admin = () => {
       fetchAll();
     }
   };
+
+  const handleStatusChange = async (bookingId, newStatus, bookingData) => {
+  try {
+    // Находим полные данные клиента, мастера и услуги
+    const fullClient = clients.find(c => c.id_c === bookingData.id_c);
+    const fullMaster = masters.find(m => m.id_m === bookingData.id_m);
+    const fullService = services.find(s => s.id_y === bookingData.id_y);
+    
+    await updateBooking(bookingId, { ...bookingData, Статус: newStatus });
+    fetchAll();
+    
+    if (newStatus === 'Подтвержден') {
+      setCurrentPDFData({
+        ...bookingData,
+        client: fullClient,
+        master: fullMaster,
+        service: fullService
+      });
+      setShowPDFModal(true);
+    }
+  } catch (error) {
+    alert('Ошибка обновления статуса');
+  }
+};
 
   if (loading) return <div className="loader-container">Загрузка...</div>;
 
@@ -103,7 +128,20 @@ const Admin = () => {
                   {bookings.map(b => (
                     <tr key={b.id_z}>
                       <td>#{b.id_z}</td><td>{new Date(b.Дата_время).toLocaleDateString()}</td>
-                      <td>{b.Клиент}</td><td>{b.Услуга}</td><td>{b.Мастер}</td><td>{b.Статус}</td>
+                      <td>{b.Клиент}</td><td>{b.Услуга}</td><td>{b.Мастер}</td>
+                      <td>
+                        <select 
+                          className="status-select"
+                          value={b.Статус}
+                          onChange={(e) => handleStatusChange(b.id_z, e.target.value, b)}
+                        >
+                          <option value="Новый">Новый</option>
+                          <option value="Подтвержден">Подтвержден</option>
+                          <option value="Выполняется">Выполняется</option>
+                          <option value="Завершен">Завершен</option>
+                          <option value="Отменен">Отменен</option>
+                        </select>
+                      </td>
                       <td><button onClick={() => setEditingItem(b)}>Изменить</button><button onClick={() => handleDelete(deleteBooking, b.id_z, 'заявку')}>Удалить</button></td>
                     </tr>
                   ))}
@@ -185,11 +223,11 @@ const Admin = () => {
                 <thead><tr><th>ID</th><th>ФИО</th><th>Телефон</th><th>Email</th><th>Роль</th><th>Действия</th></tr></thead>
                 <tbody>
                   {clients.map(c => {
-                    // Проверка: является ли этот пользователь текущим админом
                     const isSelf = currentUser && currentUser.id === c.id_c && currentUser.role === 1;
                     return (
                       <tr key={c.id_c}>
-                        <td>#{c.id_c}</td><td>{c.ФИО}</td><td>{c.Телефон}</td><td>{c.Почта || '-'}</td><td>{c.id_r === 1 ? 'Админ' : c.id_r === 2 ? 'Мастер' : 'Клиент'}</td>
+                        <td>#{c.id_c}</td><td>{c.ФИО}</td><td>{c.Телефон}</td><td>{c.Почта || '-'}</td>
+                        <td>{c.id_r === 1 ? 'Админ' : c.id_r === 2 ? 'Мастер' : 'Клиент'}</td>
                         <td>
                           <button onClick={() => setEditingItem(c)}>Изменить</button>
                           {!isSelf && <button onClick={() => handleDelete(deleteClient, c.id_c, 'клиента', c.id_r)}>Удалить</button>}
@@ -203,7 +241,6 @@ const Admin = () => {
               {editingItem && (
                 <form onSubmit={(e) => {
                   e.preventDefault();
-                  //админ не может понизить сам себя до клиента
                   const isSelf = currentUser && currentUser.id === editingItem.id_c;
                   const newRole = parseInt(editingItem.id_r);
                   if (isSelf && newRole !== 1) {
@@ -264,6 +301,16 @@ const Admin = () => {
             </div>
           )}
         </div>
+
+{showPDFModal && currentPDFData && (
+    <ActPDF 
+        booking={currentPDFData}
+        client={currentPDFData.client}
+        master={currentPDFData.master}
+        service={currentPDFData.service}
+        onClose={() => setShowPDFModal(false)}
+    />
+)}
       </div>
     </>
   );

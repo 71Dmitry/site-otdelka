@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -17,15 +17,22 @@ const Login = lazy(() => import('./pages/Login'));
 const Admin = lazy(() => import('./pages/Admin'));
 
 function App() {
-  // Очищаем сохраненные данные при запуске (гость)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   useEffect(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // Проверяем токен при загрузке приложения
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (token && user) {
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
   }, []);
 
   return (
     <div className="App">
-      <Header />
+      <Header isAuthenticated={isAuthenticated} />
       <main className="main-content">
         <Suspense fallback={<Loader />}>
           <Routes>
@@ -37,7 +44,6 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/terms" element={<Terms />} />
           </Routes>
         </Suspense>
       </main>
