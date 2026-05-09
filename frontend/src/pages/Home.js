@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate  } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import './Home.css';
 
@@ -10,7 +10,7 @@ const Home = () => {
     serviceType: 1
   });
   const [result, setResult] = useState(null);
-
+  const navigate = useNavigate();
   const calculatePrice = () => {
   const repairPrices = { 1: 2000, 2: 3500, 3: 5000 };
   const roomCoefficients = { apartment: 1.0, house: 1.3, office: 1.1 };
@@ -100,6 +100,9 @@ const Home = () => {
                   <h3>Примерная стоимость:</h3>
                   <div className="result-price">{result.toLocaleString()} ₽</div>
                   <p className="result-note">* Точная цена после выезда мастера</p>
+                      <button className="btn btn-primary" onClick={() => navigate('/contacts')}>
+                        Договориться о встрече
+                      </button>
                 </div>
               )}
             </div>
@@ -174,7 +177,135 @@ const Home = () => {
             </div>
           </div>
         </section>
+        {/* Акция */}
+        <section className="promo-banner">
+          <div className="container">
+            <div className="promo-card">
+              <div className="promo-content">
+                <h3>Скидка 15% на монтаж натяжного потолка</h3>
+                <p>При заказе капитального ремонта от 50 000 ₽</p>
+              </div>
+              <button className="btn btn-primary" onClick={() => navigate('/contacts')}>
+                Узнать подробности
+              </button>
+            </div>
+          </div>
+        </section>
+        {/* Этапы работы */}
+<section className="work-steps">
+  <div className="container">
+    <h2 className="section-title">Как мы работаем</h2>
+    <p className="section-subtitle">6 простых шагов к идеальному ремонту</p>
+    
+    <div className="steps-timeline">
+      <div className="step-item">
+        <div className="step-number">1</div>
+        <div className="step-content">
+          <h3>Заявка и замер</h3>
+          <p>Оставляете заявку, мы выезжаем на бесплатный замер и консультацию</p>
+        </div>
+      </div>
 
+      <div className="step-item reverse">
+        <div className="step-number">2</div>
+        <div className="step-content">
+          <h3>Дизайн-проект и смета</h3>
+          <p>Разрабатываем дизайн, подбираем материалы, составляем точную смету</p>
+        </div>
+      </div>
+
+      <div className="step-item">
+        <div className="step-number">3</div>
+        <div className="step-content">
+          <h3>Демонтаж</h3>
+          <p>Удаляем старую отделку, вывозим мусор</p>
+        </div>
+      </div>
+
+      <div className="step-item reverse">
+        <div className="step-number">4</div>
+        <div className="step-content">
+          <h3>Черновые работы</h3>
+          <p>Стяжка пола, штукатурка стен, разводка коммуникаций</p>
+        </div>
+      </div>
+
+      <div className="step-item">
+        <div className="step-number">5</div>
+        <div className="step-content">
+          <h3>Чистовая отделка</h3>
+          <p>Плитка, обои, ламинат, установка дверей и сантехники</p>
+        </div>
+      </div>
+
+      <div className="step-item reverse">
+        <div className="step-number">6</div>
+        <div className="step-content">
+          <h3>Уборка и сдача объекта</h3>
+          <p>Клининг, финальная проверка, подписание акта приема-передачи</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{/* FAQ */}
+<section className="faq-section">
+  <div className="container">
+    <h2 className="section-title">Часто задаваемые вопросы</h2>
+    
+    <div className="faq-grid">
+      <div className="faq-item">
+        <div className="faq-question" onClick={(e) => e.currentTarget.classList.toggle('open')}>
+          <span>Сколько длится ремонт 2-комнатной квартиры?</span>
+          <span className="faq-icon">▼</span>
+        </div>
+        <div className="faq-answer">
+          <p>В среднем 2-3 месяца. Все зависит от сложности работ и площади. Приступаем строго по графику, без задержек.</p>
+        </div>
+      </div>
+
+      <div className="faq-item">
+        <div className="faq-question" onClick={(e) => e.currentTarget.classList.toggle('open')}>
+          <span>Вы работаете по договору?</span>
+          <span className="faq-icon">▼</span>
+        </div>
+        <div className="faq-answer">
+          <p>Да, мы работаем официально. Заключаем договор, предоставляем гарантию 3 года. Все обязательства прописаны юридически.</p>
+        </div>
+      </div>
+
+      <div className="faq-item">
+        <div className="faq-question" onClick={(e) => e.currentTarget.classList.toggle('open')}>
+          <span>Можно ли посмотреть объект в работе?</span>
+          <span className="faq-icon">▼</span>
+        </div>
+        <div className="faq-answer">
+          <p>Конечно! Мы открыты к диалогу. Вы можете приехать на любой наш объект и оценить качество работ лично.</p>
+        </div>
+      </div>
+
+      <div className="faq-item">
+        <div className="faq-question" onClick={(e) => e.currentTarget.classList.toggle('open')}>
+          <span>Что входит в «ремонт под ключ»?</span>
+          <span className="faq-icon">▼</span>
+        </div>
+        <div className="faq-answer">
+          <p>Полный цикл: от демонтажа до финишной отделки. Включая черновые работы, чистовую отделку, установку сантехники, освещения и уборку.</p>
+        </div>
+      </div>
+
+      <div className="faq-item">
+        <div className="faq-question" onClick={(e) => e.currentTarget.classList.toggle('open')}>
+          <span>Как происходит оплата?</span>
+          <span className="faq-icon">▼</span>
+        </div>
+        <div className="faq-answer">
+          <p>Удобная система: поэтапная оплата. Вы платите за выполненный этап работ. Никакой 100% предоплаты.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
         {/* отзывы */}
         <section className="reviews">
           <div className="container">

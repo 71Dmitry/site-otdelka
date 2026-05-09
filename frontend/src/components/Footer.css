@@ -97,7 +97,11 @@
   border-top: 1px solid #444;
   color: #999;
 }
-
+.terms-link {
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+  }
 /* адаптивность */
 @media (max-width: 992px) {
   .footer-grid {

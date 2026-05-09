@@ -45,6 +45,9 @@ const Footer = () => {
 
         <div className="footer-bottom">
           <p>© 2026 ОтделкаПрофи. Все права защищены.</p>
+          <div className="footer-links-bottom">
+          <a href="/terms" target="_blank" className="terms-link">Политика конфиденциальности</a>
+          </div>
         </div>
       </div>
     </footer>

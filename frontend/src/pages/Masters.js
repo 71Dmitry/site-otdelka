@@ -33,7 +33,53 @@ const Masters = () => {
     ? masters 
     : masters.filter(master => master.Категория === filter);
 
-  // описание длчя мастеров
+  // уникальные данные для каждого мастера
+  const getMasterExperience = (id) => {
+    const experiences = {
+      1: '6+',
+      2: '8+', 
+      3: '7+',
+      4: '7+',
+      5: '6+',
+    };
+    return experiences[id] || '5+ лет опыта';
+  };
+
+  const getMasterWorks = (id) => {
+    const works = {
+      1: '470+',
+      2: '340+',
+      3: '750+',
+      4: '470+',
+      5: '340+',
+    };
+    return works[id] || '500+ работ';
+  };
+
+  const getMasterSatisfaction = (id) => {
+    const satisfaction = {
+      1: '99%',
+      2: '97%',
+      3: '100%',
+      4: '98%',
+      5: '96%',
+    };
+    return satisfaction[id] || '98% довольны';
+  };
+
+  const getMasterRating = (id) => {
+    const ratings = {
+      1: '4.9',
+      2: '4.8',
+      3: '5.0',
+      4: '4.9',
+      5: '4.7',
+      6: '4.8'
+    };
+    return ratings[id] || '4.9';
+  };
+
+  // описание для мастеров
   const getMasterDescription = (master) => {
     const descriptions = {
       'Ступин Дмитрий Сергеевич': 'Специализируется на штукатурных работах и выравнивании стен любой сложности. Использует современные материалы и технологии. За его плечами более 450 отремонтированных квартир. Работает аккуратно, соблюдает все сроки.',
@@ -80,11 +126,11 @@ const Masters = () => {
               <div className="stat-label">Опытных мастеров</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">5+</div>
+              <div className="stat-number">7+</div>
               <div className="stat-label">Лет средний опыт</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">500+</div>
+              <div className="stat-number">2300+</div>
               <div className="stat-label">Выполненных объектов</div>
             </div>
           </div>
@@ -92,44 +138,51 @@ const Masters = () => {
           {/* сетка мастеров */}
           {filteredMasters.length > 0 ? (
             <div className="masters-grid">
-              {filteredMasters.map((master, index) => (
-                <div key={master.id_m} className="master-card">
-                  <div className="master-image">
-                    <img 
-                      src={`/images/${36 + (master.id_m % 5)}.jpg`}
-                      alt={master.ФИО}
-                    />
-                    <div className="master-rating">
-                      <span className="rating-stars">★★★★★</span>
-                      <span className="rating-value">4.9</span>
-                    </div>
-                  </div>
-                  <div className="master-info">
-                    <h3 className="master-name">{master.ФИО}</h3>
-                    <p className="master-category">{master.Категория}</p>
-                    <div className="master-stats">
-                      <div className="master-stat">
-                        <span className="stat-value">5+</span>
-                        <span className="stat-label">лет опыта</span>
-                      </div>
-                      <div className="master-stat">
-                        <span className="stat-value">500+</span>
-                        <span className="stat-label">работ</span>
-                      </div>
-                      <div className="master-stat">
-                        <span className="stat-value">98%</span>
-                        <span className="stat-label">довольны</span>
+              {filteredMasters.map((master, index) => {
+                const experienceNum = getMasterExperience(master.id_m);
+                const worksNum = getMasterWorks(master.id_m);
+                const satisfactionNum = getMasterSatisfaction(master.id_m);
+                const rating = getMasterRating(master.id_m);
+                
+                return (
+                  <div key={master.id_m} className="master-card">
+                    <div className="master-image">
+                      <img 
+                        src={`/images/${36 + (master.id_m % 5)}.jpg`}
+                        alt={master.ФИО}
+                      />
+                      <div className="master-rating">
+                        <span className="rating-stars">★★★★★</span>
+                        <span className="rating-value">{rating}</span>
                       </div>
                     </div>
-                    <button 
-                      className="btn btn-primary btn-block"
-                      onClick={() => setSelectedMaster(master)}
-                    >
-                      Подробнее
-                    </button>
+                    <div className="master-info">
+                      <h3 className="master-name">{master.ФИО}</h3>
+                      <p className="master-category">{master.Категория}</p>
+                      <div className="master-stats">
+                        <div className="master-stat">
+                          <span className="stat-value">{experienceNum}</span>
+                          <span className="stat-label">опыта</span>
+                        </div>
+                        <div className="master-stat">
+                          <span className="stat-value">{worksNum}</span>
+                          <span className="stat-label">работ</span>
+                        </div>
+                        <div className="master-stat">
+                          <span className="stat-value">{satisfactionNum}</span>
+                          <span className="stat-label">довольны</span>
+                        </div>
+                      </div>
+                      <button 
+                        className="btn btn-primary btn-block"
+                        onClick={() => setSelectedMaster(master)}
+                      >
+                        Подробнее
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="no-results">
@@ -167,11 +220,11 @@ const Masters = () => {
                 <div className="modal-specs">
                   <div className="spec-item">
                     <span className="spec-label">Стаж работы:</span>
-                    <span className="spec-value">более 5 лет</span>
+                    <span className="spec-value">{getMasterExperience(selectedMaster.id_m)}</span>
                   </div>
                   <div className="spec-item">
                     <span className="spec-label">Выполнено объектов:</span>
-                    <span className="spec-value">500+</span>
+                    <span className="spec-value">{getMasterWorks(selectedMaster.id_m)}</span>
                   </div>
                   <div className="spec-item">
                     <span className="spec-label">Образование:</span>
