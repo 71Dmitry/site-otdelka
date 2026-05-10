@@ -26,7 +26,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 function initDatabase() {
     db.serialize(() => {
-        // 1. Сначала создаём таблицы (если их нет)
+        // созд таблицы (если их нет)
         const createTables = `
             CREATE TABLE IF NOT EXISTS Роли (
                 id_r INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,7 +94,7 @@ function initDatabase() {
             );
         `;
 
-        // Выполняем создание таблиц
+        // выполнение создание таблиц
         const statements = createTables.split(';').filter(s => s.trim());
         statements.forEach(stmt => {
             if (stmt.trim()) db.run(stmt, (err) => {
@@ -102,9 +102,9 @@ function initDatabase() {
             });
         });
 
-        // 2. Проверяем и заполняем начальными данными только если таблицы пустые
+        // проверка и заполн начальными данными только если таблицы пустые
         setTimeout(() => {
-            // Проверка Ролей
+        // проверка ролей
             db.get('SELECT COUNT(*) as count FROM Роли', [], (err, row) => {
                 if (err) return;
                 if (row.count === 0) {
@@ -128,7 +128,7 @@ function initDatabase() {
                         ('Установка розеток', 300.00, 5),
                         ('Шпаклевка стен', 600.00, 1)`);
                     
-                    // Хеш пароля 123456 для начальных данных
+                    // хеш пароля 123456 для начальных данных (так для теста)
                     const hash = '$2a$10$Oh6849Zpv.sXdeU9IXx0L.ClnpyctByoaqsOzo5tf/AL646LQjL..';
                     
                     db.run(`INSERT OR IGNORE INTO Мастер (ФИО, Телефон, Почта, id_k, id_r) VALUES 
@@ -179,7 +179,7 @@ function initDatabase() {
                     console.log('База данных уже существует, данные сохранены');
                 }
             });
-        }, 100); // Небольшая задержка для создания таблиц
+        },); 
     });
 }
 
@@ -508,7 +508,7 @@ app.put('/api/client/profile/:id', [
     });
 });
 
-// 16. СМЕНИТЬ ПАРОЛЬ КЛИЕНТА
+// 16. смена пароля клиента
 app.put('/api/client/password/:id', [
     body('Пароль').isLength({ min: 6 })
 ], async (req, res) => {
@@ -534,7 +534,7 @@ app.put('/api/client/password/:id', [
     }
 });
 
-// АДМИН: ПОЛУЧИТЬ ВСЕ ТИПЫ УСЛУГ
+// получить все типы услуг
 app.get('/api/admin/service-types', (req, res) => {
     db.all('SELECT * FROM Тип_услуги ORDER BY id_ty', [], (err, rows) => {
         if (err) {
@@ -545,7 +545,7 @@ app.get('/api/admin/service-types', (req, res) => {
     });
 });
 
-// АДМИН: ДОБАВИТЬ ТИП УСЛУГИ
+// добав типы усл
 app.post('/api/admin/service-types', (req, res) => {
     const { Название } = req.body;
     
@@ -566,11 +566,11 @@ app.post('/api/admin/service-types', (req, res) => {
     });
 });
 
-// АДМИН: УДАЛИТЬ ТИП УСЛУГИ
+// удалитт типы усл
 app.delete('/api/admin/service-types/:id', (req, res) => {
     const { id } = req.params;
     
-    // Проверяем, есть ли услуги с таким типом
+    // проверка на наличие услуг у типа 
     db.get('SELECT COUNT(*) as count FROM Услуги WHERE id_ty = ?', [id], (err, row) => {
         if (err) {
             return res.status(500).json({ error: err.message });

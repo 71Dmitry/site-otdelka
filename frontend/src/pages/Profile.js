@@ -322,7 +322,6 @@ const Profile = () => {
                             <div className="booking-info">
                               <h3>{booking.Услуга}</h3>
                               <p><strong>Мастер:</strong> {booking.Мастер}</p>
-                              <p><strong>Телефон мастера:</strong> {booking.Телефон_мастера}</p>
                               <p><strong>Стоимость:</strong> {booking.Цена} ₽/м²</p>
                             </div>
                           </div>
