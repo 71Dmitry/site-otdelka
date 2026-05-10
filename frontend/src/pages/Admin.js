@@ -8,7 +8,8 @@ import {
   getAllMastersAdmin, addMaster, updateMaster, deleteMaster,
   getAllClients, addClient, updateClient, deleteClient,
   getAllCategories, addCategory, deleteCategory,
-  getServiceTypes
+  getServiceTypes,
+  getAllServiceTypesAdmin, addServiceType, deleteServiceType
 } from '../api';
 import './Admin.css';
 
@@ -26,27 +27,29 @@ const Admin = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [currentPDFData, setCurrentPDFData] = useState(null);
+  const [serviceTypesAdmin, setServiceTypesAdmin] = useState([]);
 
   const fetchAll = async () => {
-    setLoading(true);
-    try {
-      const [bookRes, servRes, typesRes, mastRes, clientRes, catRes] = await Promise.all([
-        getAllBookings(),
-        getAllServicesAdmin(),
-        getServiceTypes(),
-        getAllMastersAdmin(),
-        getAllClients(),
-        getAllCategories()
-      ]);
-      setBookings(bookRes.data);
-      setServices(servRes.data);
-      setServiceTypes(typesRes.data);
-      setMasters(mastRes.data);
-      setClients(clientRes.data);
-      setCategories(catRes.data);
-    } catch (err) { console.error(err); }
-    setLoading(false);
-  };
+  setLoading(true);
+  try {
+    const [bookRes, servRes, typesRes, mastRes, clientRes, catRes] = await Promise.all([
+      getAllBookings(),
+      getAllServicesAdmin(),
+      getServiceTypes(),           
+      getAllMastersAdmin(),
+      getAllClients(),
+      getAllCategories()
+    ]);
+    setBookings(bookRes.data);
+    setServices(servRes.data);
+    setServiceTypes(typesRes.data);       
+    setServiceTypesAdmin(typesRes.data);   
+    setMasters(mastRes.data);
+    setClients(clientRes.data);
+    setCategories(catRes.data);
+  } catch (err) { console.error(err); }
+  setLoading(false);
+};
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -115,7 +118,8 @@ const Admin = () => {
             <button className={activeTab === 'services' ? 'active' : ''} onClick={() => setActiveTab('services')}>Услуги</button>
             <button className={activeTab === 'masters' ? 'active' : ''} onClick={() => setActiveTab('masters')}>Мастера</button>
             <button className={activeTab === 'clients' ? 'active' : ''} onClick={() => setActiveTab('clients')}>Клиенты</button>
-            <button className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>Категории</button>
+            <button className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>Категории мастеров</button>
+            <button className={activeTab === 'serviceTypes' ? 'active' : ''} onClick={() => setActiveTab('serviceTypes')}>Типы услуг</button>
           </div>
 
           {activeTab === 'bookings' && (
@@ -300,6 +304,47 @@ const Admin = () => {
               </table>
             </div>
           )}
+{activeTab === 'serviceTypes' && (
+  <div>
+    <h2>Управление типами услуг</h2>
+    <form onSubmit={async (e) => {
+        e.preventDefault();
+        const name = e.target.serviceTypeName.value;
+        if (!name) return;
+        try {
+            await addServiceType({ Название: name });  // ← передаём объект, а не строку
+            e.target.serviceTypeName.value = '';
+            fetchAll();
+        } catch (err) {
+            alert(err.response?.data?.error || 'Ошибка добавления типа услуги');
+        }
+    }} className="admin-form">
+      <input type="text" name="serviceTypeName" placeholder="Название типа услуги" required />
+      <button type="submit">Добавить</button>
+    </form>
+    <table className="admin-table">
+      <thead>
+        <tr><th>ID</th><th>Название</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+        {serviceTypesAdmin.map(t => (
+          <tr key={t.id_ty}>
+            <td>#{t.id_ty}</td>
+            <td>{t.Название}</td>
+            <td>
+              <button onClick={() => {
+                if (window.confirm(`Удалить тип услуги "${t.Название}"?`)) {
+                  deleteServiceType(t.id_ty).then(() => fetchAll()).catch(err => alert(err.response?.data?.error || 'Ошибка'));
+                }
+              }}>Удалить</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    {serviceTypesAdmin.length === 0 && <p>Нет типов услуг. Добавьте первый!</p>}
+  </div>
+)}
         </div>
 
 {showPDFModal && currentPDFData && (

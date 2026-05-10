@@ -132,11 +132,11 @@ function initDatabase() {
                     const hash = '$2a$10$Oh6849Zpv.sXdeU9IXx0L.ClnpyctByoaqsOzo5tf/AL646LQjL..';
                     
                     db.run(`INSERT OR IGNORE INTO Мастер (ФИО, Телефон, Почта, id_k, id_r) VALUES 
-                        ('Ступин Дмитрий сергеевич', '+79001234567', 'ivanov@mail.ru', 1, 2),
-                        ('Просоленко Дмитрий Анатольевич', '+79002345678', 'petrov@mail.ru', 2, 2),
-                        ('Замятин Николай Сергеевич', '+79003456789', 'sidorov@mail.ru', 3, 2),
+                        ('Ступин Дмитрий сергеевич', '+79001234567', 'stupin@mail.ru', 1, 2),
+                        ('Просоленко Дмитрий Анатольевич', '+79002345678', 'prosolenko@mail.ru', 2, 2),
+                        ('Замятин Николай Сергеевич', '+79003456789', 'zamyatin@mail.ru', 3, 2),
                         ('Козлов Андрей Николаевич', '+79004567890', 'kozlov@mail.ru', 4, 2),
-                        ('Ясаян Арсен Тимурович', '+79005678901', 'morozov@mail.ru', 5, 2),`);
+                        ('Ясаян Арсен Тимурович', '+79005678901', 'yasayan@mail.ru', 5, 2),`);
                     
                     db.run(`INSERT OR IGNORE INTO Клиенты (ФИО, Телефон, Почта, Пароль, id_r) VALUES 
                         ('Волков Алексей Михайлович', '+79006789012', 'volkov@mail.ru', '${hash}', 1),
@@ -532,6 +532,62 @@ app.put('/api/client/password/:id', [
     } catch (error) {
         res.status(500).json({ error: 'Ошибка хеширования' });
     }
+});
+
+// АДМИН: ПОЛУЧИТЬ ВСЕ ТИПЫ УСЛУГ
+app.get('/api/admin/service-types', (req, res) => {
+    db.all('SELECT * FROM Тип_услуги ORDER BY id_ty', [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+// АДМИН: ДОБАВИТЬ ТИП УСЛУГИ
+app.post('/api/admin/service-types', (req, res) => {
+    const { Название } = req.body;
+    
+    if (!Название || Название.trim() === '') {
+        return res.status(400).json({ error: 'Название обязательно' });
+    }
+    
+    db.run('INSERT INTO Тип_услуги (Название) VALUES (?)', [Название.trim()], function(err) {
+        if (err) {
+            if (err.message.includes('UNIQUE')) {
+                res.status(400).json({ error: 'Такой тип услуги уже существует' });
+            } else {
+                res.status(500).json({ error: err.message });
+            }
+        } else {
+            res.json({ id: this.lastID, message: 'Тип услуги добавлен' });
+        }
+    });
+});
+
+// АДМИН: УДАЛИТЬ ТИП УСЛУГИ
+app.delete('/api/admin/service-types/:id', (req, res) => {
+    const { id } = req.params;
+    
+    // Проверяем, есть ли услуги с таким типом
+    db.get('SELECT COUNT(*) as count FROM Услуги WHERE id_ty = ?', [id], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (row.count > 0) {
+            return res.status(400).json({ error: 'Нельзя удалить тип, у которого есть услуги' });
+        }
+        
+        db.run('DELETE FROM Тип_услуги WHERE id_ty = ?', [id], function(err) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+            } else {
+                res.json({ message: 'Тип услуги удален' });
+            }
+        });
+    });
 });
 app.listen(port, () => {
     console.log(`Сервер запущен на http://localhost:${port}`);

@@ -51,7 +51,10 @@ export const getAllCategories = () => api.get('/admin/categories');
 export const addCategory = (name) => api.post('/admin/categories', { Наименование: name });
 export const deleteCategory = (id) => api.delete(`/admin/categories/${id}`);
 
-
+// типы услуг (админка)
+export const getAllServiceTypesAdmin = () => api.get('/admin/service-types');
+export const addServiceType = (data) => api.post('/admin/service-types', data);
+export const deleteServiceType = (id) => api.delete(`/admin/service-types/${id}`);
 
 // Обновление профиля клиента
 export const updateProfile = (clientId, data) => api.put(`/client/profile/${clientId}`, data);
