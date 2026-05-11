@@ -153,7 +153,7 @@ const Profile = () => {
   return (
     <>
       <Helmet>
-        <title>Личный кабинет | РемонтПрофи</title>
+        <title>Личный кабинет | ОтделкаПрофи</title>
       </Helmet>
 
       <div className="profile-page">

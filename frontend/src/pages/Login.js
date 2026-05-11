@@ -175,7 +175,7 @@ const Login = () => {
   return (
     <>
       <Helmet>
-        <title>{isLogin ? 'Вход' : 'Регистрация'} | РемонтПрофи</title>
+        <title>{isLogin ? 'Вход' : 'Регистрация'} | ОтделкаПрофи</title>
         <meta name="description" content="Войдите в личный кабинет или зарегистрируйтесь для отслеживания заказов" />
       </Helmet>
 

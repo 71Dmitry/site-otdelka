@@ -56,10 +56,10 @@ export const getAllServiceTypesAdmin = () => api.get('/admin/service-types');
 export const addServiceType = (data) => api.post('/admin/service-types', data);
 export const deleteServiceType = (id) => api.delete(`/admin/service-types/${id}`);
 
-// Обновление профиля клиента
+// обновление профиля клиента
 export const updateProfile = (clientId, data) => api.put(`/client/profile/${clientId}`, data);
 
-// Смена пароля клиента
+// смена пароля клиента
 export const updatePassword = (clientId, data) => api.put(`/client/password/${clientId}`, data);
 export const cancelBooking = (bookingId) => api.put(`/bookings/${bookingId}/cancel`);
 

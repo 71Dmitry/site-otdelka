@@ -20,7 +20,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Проверяем токен при загрузке приложения
+    // проверяем токен при загрузке приложения
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
     if (token && user) {

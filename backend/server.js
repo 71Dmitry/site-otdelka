@@ -223,20 +223,20 @@ app.get('/api/masters', (req, res) => {
 app.post('/api/login', (req, res) => {
     const { Телефон, Пароль } = req.body;
     
-    // Ищем пользователя в таблице Клиенты
+    // ищу пользователя в таблице Клиенты
     db.get('SELECT id_c, ФИО, Телефон, Почта, Пароль, id_r FROM Клиенты WHERE Телефон = ?', [Телефон], async (err, user) => {
         if (err) {
             res.status(500).json({ error: err.message });
         } else if (!user) {
             res.status(401).json({ error: 'Неверный телефон или пароль' });
         } else {
-            // Проверяем пароль через bcrypt
+            // проверка пароль через bcrypt
             const valid = await bcrypt.compare(Пароль, user.Пароль);
             if (!valid) {
                 return res.status(401).json({ error: 'Неверный телефон или пароль' });
             }
             
-            // Генерируем токен
+            // генерю токен
             const token = jwt.sign(
                 { id: user.id_c, role: user.id_r }, 
                 JWT_SECRET, 
@@ -468,7 +468,7 @@ app.delete('/api/admin/categories/:id', authenticateToken, requireAdmin, (req, r
         res.json({ message: 'Удалено' });
     });
 });
-// 15. ОБНОВИТЬ ПРОФИЛЬ КЛИЕНТА
+// обнов профиль клиента
 app.put('/api/client/profile/:id', [
     body('ФИО').optional().notEmpty(),
     body('Телефон').optional().isMobilePhone('ru-RU'),
@@ -508,7 +508,7 @@ app.put('/api/client/profile/:id', [
     });
 });
 
-// 16. смена пароля клиента
+// 16й смена пароля клиента
 app.put('/api/client/password/:id', [
     body('Пароль').isLength({ min: 6 })
 ], async (req, res) => {
