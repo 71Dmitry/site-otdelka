@@ -330,7 +330,7 @@ const Profile = () => {
                     </div>
                   )}
                 </div>
-              )}
+              )} 
 
               {/* вкладка истории */}
               {activeTab === 'history' && !showProfileForm && !showPasswordForm && (
