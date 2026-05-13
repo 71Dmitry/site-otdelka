@@ -83,7 +83,7 @@ const Admin = () => {
 
   const handleStatusChange = async (bookingId, newStatus, bookingData) => {
   try {
-    // Находим полные данные клиента, мастера и услуги
+    // поиск полных данных клиента, мастера и услуги
     const fullClient = clients.find(c => c.id_c === bookingData.id_c);
     const fullMaster = masters.find(m => m.id_m === bookingData.id_m);
     const fullService = services.find(s => s.id_y === bookingData.id_y);
@@ -304,47 +304,47 @@ const Admin = () => {
               </table>
             </div>
           )}
-{activeTab === 'serviceTypes' && (
-  <div>
-    <h2>Управление типами услуг</h2>
-    <form onSubmit={async (e) => {
-        e.preventDefault();
-        const name = e.target.serviceTypeName.value;
-        if (!name) return;
-        try {
-            await addServiceType({ Название: name });  // ← передаём объект, а не строку
-            e.target.serviceTypeName.value = '';
-            fetchAll();
-        } catch (err) {
-            alert(err.response?.data?.error || 'Ошибка добавления типа услуги');
-        }
-    }} className="admin-form">
-      <input type="text" name="serviceTypeName" placeholder="Название типа услуги" required />
-      <button type="submit">Добавить</button>
-    </form>
-    <table className="admin-table">
-      <thead>
-        <tr><th>ID</th><th>Название</th><th>Действия</th></tr>
-      </thead>
-      <tbody>
-        {serviceTypesAdmin.map(t => (
-          <tr key={t.id_ty}>
-            <td>#{t.id_ty}</td>
-            <td>{t.Название}</td>
-            <td>
-              <button onClick={() => {
-                if (window.confirm(`Удалить тип услуги "${t.Название}"?`)) {
-                  deleteServiceType(t.id_ty).then(() => fetchAll()).catch(err => alert(err.response?.data?.error || 'Ошибка'));
-                }
-              }}>Удалить</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    {serviceTypesAdmin.length === 0 && <p>Нет типов услуг. Добавьте первый!</p>}
-  </div>
-)}
+          {activeTab === 'serviceTypes' && (
+            <div>
+              <h2>Управление типами услуг</h2>
+              <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  const name = e.target.serviceTypeName.value;
+                  if (!name) return;
+                  try {
+                      await addServiceType({ Название: name });  // ← передаём объект, а не строку
+                      e.target.serviceTypeName.value = '';
+                      fetchAll();
+                  } catch (err) {
+                      alert(err.response?.data?.error || 'Ошибка добавления типа услуги');
+                  }
+              }} className="admin-form">
+                <input type="text" name="serviceTypeName" placeholder="Название типа услуги" required />
+                <button type="submit">Добавить</button>
+              </form>
+              <table className="admin-table">
+                <thead>
+                  <tr><th>ID</th><th>Название</th><th>Действия</th></tr>
+                </thead>
+                <tbody>
+                  {serviceTypesAdmin.map(t => (
+                    <tr key={t.id_ty}>
+                      <td>#{t.id_ty}</td>
+                      <td>{t.Название}</td>
+                      <td>
+                        <button onClick={() => {
+                          if (window.confirm(`Удалить тип услуги "${t.Название}"?`)) {
+                            deleteServiceType(t.id_ty).then(() => fetchAll()).catch(err => alert(err.response?.data?.error || 'Ошибка'));
+                          }
+                        }}>Удалить</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {serviceTypesAdmin.length === 0 && <p>Нет типов услуг. Добавьте первый!</p>}
+            </div>
+          )}
         </div>
 
 {showPDFModal && currentPDFData && (
