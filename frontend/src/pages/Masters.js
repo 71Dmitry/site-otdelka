@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { getMasters } from '../api';
+import { getMasters, getMasterSchedule } from '../api';
 import Loader from '../components/Loader';
 import './Masters.css';
+
 
 const Masters = () => {
   const [masters, setMasters] = useState([]);
@@ -12,16 +13,38 @@ const Masters = () => {
 
   useEffect(() => {
     const fetchMasters = async () => {
-      try {
-        setLoading(true);
-        const response = await getMasters();
-        setMasters(response.data);
-      } catch (error) {
-        console.error('Ошибка загрузки мастеров:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  try {
+    setLoading(true);
+    const response = await getMasters();
+    const mastersData = response.data;
+    
+    // загр расписание для каждого мастера
+    const mastersWithSchedule = await Promise.all(
+      mastersData.map(async (master) => {
+        try {
+          const scheduleRes = await getMasterSchedule(master.id_m);
+          const schedule = scheduleRes.data;
+          if (schedule && schedule.length > 0) {
+            const days = schedule.map(s => s.День_недели.slice(0, 2)).join(', ');
+            const hours = `${schedule[0].Начало_смены.slice(0,5)}-${schedule[0].Конец_смены.slice(0,5)}`;
+            master.Расписание = `${days} ${hours}`;
+          } else {
+            master.Расписание = 'Пн-Пт 09:00-18:00';
+          }
+        } catch (e) {
+          master.Расписание = 'Пн-Пт 09:00-18:00';
+        }
+        return master;
+      })
+    );
+    
+    setMasters(mastersWithSchedule);
+  } catch (error) {
+    console.error('Ошибка загрузки мастеров:', error);
+  } finally {
+    setLoading(false);
+  }
+};
     fetchMasters();
   }, []);
 
@@ -159,6 +182,7 @@ const Masters = () => {
                     <div className="master-info">
                       <h3 className="master-name">{master.ФИО}</h3>
                       <p className="master-category">{master.Категория}</p>
+                      <p className="master-schedule">{master.Расписание || 'Пн-Пт 09:00-18:00'}</p>
                       <div className="master-stats">
                         <div className="master-stat">
                           <span className="stat-value">{experienceNum}</span>
@@ -233,7 +257,11 @@ const Masters = () => {
                   <div className="spec-item">
                     <span className="spec-label">Специализация:</span>
                     <span className="spec-value">{selectedMaster.Категория}</span>
-                  </div>
+                  </div>                    
+                  <div className="spec-item">
+                    <span className="spec-label">Расписание:</span>
+                    <p className="master-card__schedule"> {selectedMaster.Расписание || 'Пн-Пт 9:00-18:00'}</p>
+                  </div> 
                 </div>
                 
                 <button className="btn btn-primary btn-block" onClick={() => setSelectedMaster(null)}>

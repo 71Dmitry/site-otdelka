@@ -58,6 +58,7 @@ export const addMaster = (data) => api.post('/admin/masters', data);
 export const updateMaster = (id, data) => api.put(`/admin/masters/${id}`, data);
 export const deleteMaster = (id) => api.delete(`/admin/masters/${id}`);
 
+
 // админ клиенты
 export const getAllClients = () => api.get('/admin/clients');
 export const addClient = (data) => api.post('/admin/clients', data);
@@ -77,5 +78,6 @@ export const deleteServiceType = (id) => api.delete(`/admin/service-types/${id}`
 // профиль клиента
 export const updateProfile = (clientId, data) => api.put(`/client/profile/${clientId}`, data);
 export const updatePassword = (clientId, data) => api.put(`/client/password/${clientId}`, data);
-
+// Расписание мастера
+export const getMasterSchedule = (masterId) => api.get(`/schedule/${masterId}`);
 export default api;

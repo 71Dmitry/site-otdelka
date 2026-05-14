@@ -8,7 +8,7 @@ import {
   getAllMastersAdmin, addMaster, updateMaster, deleteMaster,
   getAllClients, addClient, updateClient, deleteClient,
   getAllCategories, addCategory, deleteCategory,
-  getServiceTypes,
+  getServiceTypes, getMasterSchedule, 
   getAllServiceTypesAdmin, addServiceType, deleteServiceType
 } from '../api';
 import './Admin.css';
@@ -32,21 +32,43 @@ const Admin = () => {
   const fetchAll = async () => {
   setLoading(true);
   try {
-    const [bookRes, servRes, typesRes, mastRes, clientRes, catRes] = await Promise.all([
+    const [bookRes, servRes, typesRes, mastRes, clientRes, catRes, serviceTypesAdminRes] = await Promise.all([
       getAllBookings(),
       getAllServicesAdmin(),
-      getServiceTypes(),           
+      getServiceTypes(),
       getAllMastersAdmin(),
       getAllClients(),
-      getAllCategories()
+      getAllCategories(),
+      getAllServiceTypesAdmin()
     ]);
     setBookings(bookRes.data);
     setServices(servRes.data);
-    setServiceTypes(typesRes.data);       
-    setServiceTypesAdmin(typesRes.data);   
+    setServiceTypes(typesRes.data);
     setMasters(mastRes.data);
     setClients(clientRes.data);
     setCategories(catRes.data);
+    setServiceTypesAdmin(serviceTypesAdminRes.data);
+    
+    const mastersWithSchedule = await Promise.all(
+      mastRes.data.map(async (master) => {
+        try {
+          const scheduleRes = await getMasterSchedule(master.id_m);
+          const schedule = scheduleRes.data;
+          if (schedule && schedule.length > 0) {
+            const days = schedule.map(s => s.День_недели?.slice(0,2) || '').filter(d => d).join(',');
+            const hours = `${schedule[0].Начало_смены?.slice(0,5) || ''}-${schedule[0].Конец_смены?.slice(0,5) || ''}`;
+            master.Расписание = `${days} ${hours}`;
+          } else {
+            master.Расписание = 'по договоренности';
+          }
+        } catch (e) {
+          master.Расписание = 'по договоренности';
+        }
+        return master;
+      })
+    );
+    setMasters(mastersWithSchedule);
+    
   } catch (err) { console.error(err); }
   setLoading(false);
 };
@@ -81,9 +103,8 @@ const Admin = () => {
     }
   };
 
-  const handleStatusChange = async (bookingId, newStatus, bookingData) => {
+const handleStatusChange = async (bookingId, newStatus, bookingData) => {
   try {
-    // поиск полных данных клиента, мастера и услуги
     const fullClient = clients.find(c => c.id_c === bookingData.id_c);
     const fullMaster = masters.find(m => m.id_m === bookingData.id_m);
     const fullService = services.find(s => s.id_y === bookingData.id_y);
@@ -197,11 +218,11 @@ const Admin = () => {
               <h2>Управление мастерами</h2>
               <button className="btn btn-primary" onClick={() => setEditingItem({})}>Добавить мастера</button>
               <table className="admin-table">
-                <thead><tr><th>ID</th><th>ФИО</th><th>Телефон</th><th>Email</th><th>Категория</th><th>Действия</th></tr></thead>
+                <thead><tr><th>ID</th><th>ФИО</th><th>Телефон</th><th>Email</th><th>Категория</th><th>Расписание</th><th>Действия</th></tr></thead>
                 <tbody>
                   {masters.map(m => (
                     <tr key={m.id_m}>
-                      <td>#{m.id_m}</td><td>{m.ФИО}</td><td>{m.Телефон}</td><td>{m.Почта || '-'}</td><td>{m.Категория}</td>
+                      <td>#{m.id_m}</td><td>{m.ФИО}</td><td>{m.Телефон}</td><td>{m.Почта || '-'}</td><td>{m.Категория}</td><td style={{ fontSize: '12px' }}>{m.Расписание || 'загрузка...'}</td>
                       <td><button onClick={() => setEditingItem(m)}>Изменить</button><button onClick={() => handleDelete(deleteMaster, m.id_m, 'мастера')}>Удалить</button></td>
                     </tr>
                   ))}
@@ -305,46 +326,57 @@ const Admin = () => {
             </div>
           )}
           {activeTab === 'serviceTypes' && (
-            <div>
-              <h2>Управление типами услуг</h2>
-              <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  const name = e.target.serviceTypeName.value;
-                  if (!name) return;
+  <div>
+    <h2>Управление типами услуг</h2>
+    <form onSubmit={async (e) => {
+        e.preventDefault();
+        const name = e.target.serviceTypeName.value;
+        if (!name) return;
+        try {
+            await addServiceType({ Название: name });
+            e.target.serviceTypeName.value = '';
+            // Обновляем список через getAllServiceTypesAdmin
+            const res = await getAllServiceTypesAdmin();
+            setServiceTypesAdmin(res.data);
+        } catch (err) {
+            alert(err.response?.data?.error || 'Ошибка добавления типа услуги');
+        }
+    }} className="admin-form">
+      <input type="text" name="serviceTypeName" placeholder="Название типа услуги" required />
+      <button type="submit">Добавить</button>
+    </form>
+    
+    <table className="admin-table">
+      <thead>
+        <tr><th>ID</th><th>Название</th><th>Действия</th></tr>
+      </thead>
+      <tbody>
+        {serviceTypesAdmin.map(t => (
+          <tr key={t.id_ty}>
+            <td>#{t.id_ty}</td>
+            <td>{t.Название}</td>
+            <td>
+              <button onClick={async () => {
+                if (window.confirm(`Удалить тип услуги "${t.Название}"?`)) {
                   try {
-                      await addServiceType({ Название: name });  // ← передаём объект, а не строку
-                      e.target.serviceTypeName.value = '';
-                      fetchAll();
+                    await deleteServiceType(t.id_ty);
+                    const res = await getAllServiceTypesAdmin();
+                    setServiceTypesAdmin(res.data);
                   } catch (err) {
-                      alert(err.response?.data?.error || 'Ошибка добавления типа услуги');
+                    alert(err.response?.data?.error || 'Ошибка удаления');
                   }
-              }} className="admin-form">
-                <input type="text" name="serviceTypeName" placeholder="Название типа услуги" required />
-                <button type="submit">Добавить</button>
-              </form>
-              <table className="admin-table">
-                <thead>
-                  <tr><th>ID</th><th>Название</th><th>Действия</th></tr>
-                </thead>
-                <tbody>
-                  {serviceTypesAdmin.map(t => (
-                    <tr key={t.id_ty}>
-                      <td>#{t.id_ty}</td>
-                      <td>{t.Название}</td>
-                      <td>
-                        <button onClick={() => {
-                          if (window.confirm(`Удалить тип услуги "${t.Название}"?`)) {
-                            deleteServiceType(t.id_ty).then(() => fetchAll()).catch(err => alert(err.response?.data?.error || 'Ошибка'));
-                          }
-                        }}>Удалить</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {serviceTypesAdmin.length === 0 && <p>Нет типов услуг. Добавьте первый!</p>}
-            </div>
-          )}
+                }
+              }}>Удалить</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    
+    {serviceTypesAdmin.length === 0 && <p>Нет типов услуг. Добавьте первый!</p>}
+  </div>
+)}
+
         </div>
 
 {showPDFModal && currentPDFData && (
