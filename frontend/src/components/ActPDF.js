@@ -15,6 +15,19 @@ const ActPDF = ({ booking, client, master, service, onClose }) => {
         });
     };
 
+    // получения фамилии  инициалов
+    const getShortName = (fullName) => {
+        if (!fullName || fullName === '_______________') return '_______________';
+        const parts = fullName.trim().split(' ');
+        if (parts.length >= 2) {
+            const lastName = parts[0];
+            const firstNameInitial = parts[1]?.charAt(0) || '';
+            const middleNameInitial = parts[2]?.charAt(0) || '';
+            return `${lastName} ${firstNameInitial}.${middleNameInitial ? middleNameInitial + '.' : ''}`;
+        }
+        return fullName;
+    };
+
     return (
         <div className="pdf-modal" onClick={onClose}>
             <div className="pdf-modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
@@ -71,11 +84,11 @@ const ActPDF = ({ booking, client, master, service, onClose }) => {
                     <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between' }}>
                         <div style={{ textAlign: 'center' }}>
                             <p>Заказчик</p>
-                            <p>_______________ /{client?.ФИО?.split(' ')[0] || ''}/</p>
+                            <p>_______________ /{getShortName(client?.ФИО)}/</p>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                             <p>Исполнитель</p>
-                            <p>_______________ /{master?.ФИО?.split(' ')[0] || ''}/</p>
+                            <p>_______________ /{getShortName(master?.ФИО)}/</p>
                         </div>
                     </div>
 
