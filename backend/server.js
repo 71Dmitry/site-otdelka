@@ -9,13 +9,14 @@ const { body, validationResult } = require('express-validator');
 
 
 const app = express();
-const port = 5000;
-const JWT_SECRET = 'your-secret-key-change-this';
+const port = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
+const corsOrigin = process.env.CORS_ORIGIN || true;
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: corsOrigin === '*' ? true : corsOrigin, credentials: true }));
 app.use(express.json());
 
-const dbPath = path.join(__dirname, 'database.sqlite');
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'database.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) console.error('Ошибка БД:', err);
     else {
@@ -103,10 +104,11 @@ function initDatabase() {
         });
 
         // проверка и заполн начальными данными только если таблицы пустые
-        setTimeout(() => {
-        // проверка ролей
-            db.get('SELECT COUNT(*) as count FROM Роли', [], (err, row) => {
-                if (err) return;
+        db.get('SELECT COUNT(*) as count FROM Роли', [], (err, row) => {
+                if (err) {
+                    console.error('Ошибка проверки начальных данных:', err.message);
+                    return;
+                }
                 if (row.count === 0) {
                     console.log('Заполнение начальными данными...');
                     db.run(`INSERT OR IGNORE INTO Роли (Наименование) VALUES ('Администратор'), ('Мастер'), ('Клиент')`);
@@ -136,7 +138,7 @@ function initDatabase() {
                         ('Просоленко Дмитрий Анатольевич', '+79002345678', 'prosolenko@mail.ru', 2, 2),
                         ('Замятин Николай Сергеевич', '+79003456789', 'zamyatin@mail.ru', 3, 2),
                         ('Козлов Андрей Николаевич', '+79004567890', 'kozlov@mail.ru', 4, 2),
-                        ('Ясаян Арсен Тимурович', '+79005678901', 'yasayan@mail.ru', 5, 2),`);
+                        ('Ясаян Арсен Тимурович', '+79005678901', 'yasayan@mail.ru', 5, 2)`);
                     
                     db.run(`INSERT OR IGNORE INTO Клиенты (ФИО, Телефон, Почта, Пароль, id_r) VALUES 
                         ('Волков Алексей Михайлович', '+79006789012', 'volkov@mail.ru', '${hash}', 1),
@@ -195,7 +197,6 @@ function initDatabase() {
                     console.log('База данных уже существует, данные сохранены');
                 }
             });
-        },); 
     });
 }
 

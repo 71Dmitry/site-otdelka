@@ -16,8 +16,6 @@ const Footer = () => {
               Более 2500 выполненных объектов. Гарантия качества 3 года.
             </p>
             <div className="footer-social">
-              <a href="https://wa.me/79282709987" className="social-link"><img src="/images/32.jpg" alt="Facebook" width="40" height="40" style={{ borderRadius: '50%' }} /></a>
-              <a href="https://t.me/@romsstepanov01" className="social-link"><img src="/images/33.jpg" alt="Facebook" width="40" height="40" style={{ borderRadius: '50%' }} /></a>
               <a href="https://max.ru/u/f9LHodD0cOLwU6BDpcTvKv83ftuRTok-dRFetzh00fZ6eOpFOBpyqbvmUhg" className="social-link"><img src="/images/34.jpg" alt="Facebook" width="40" height="40" style={{ borderRadius: '50%' }} /></a>
             </div>
           </div>

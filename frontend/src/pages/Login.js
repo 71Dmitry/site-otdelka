@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { login, register } from '../api';
+import { cleanFIOInput, normalizeFIO, validateFIO } from '../utils/fio';
 import './Login.css';
 
 const Login = () => {
@@ -50,19 +51,6 @@ const Login = () => {
     return phoneRegex.test(phone);
   };
 
-  // Функция валидации ФИО
-  const validateFIO = (fio) => {
-    // Только буквы, пробелы, дефисы, от 2 до 100 символов
-    const fioRegex = /^[A-Za-zА-Яа-яЁё\s\-]{2,100}$/;
-    return fioRegex.test(fio.trim());
-  };
-
-  // Функция очистки ФИО (удаление лишних пробелов и спецсимволов)
-  const cleanFIO = (value) => {
-    // Заменяем несколько пробелов на один, убираем лишние символы
-    return value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '').replace(/\s+/g, ' ').trim();
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     
@@ -75,7 +63,7 @@ const Login = () => {
       });
     } else if (name === 'ФИО') {
       // Очищаем ФИО от недопустимых символов
-      const cleanedValue = cleanFIO(value);
+      const cleanedValue = cleanFIOInput(value);
       // Ограничиваем длину 100 символов
       const limitedValue = cleanedValue.slice(0, 100);
       setFormData({
@@ -152,7 +140,7 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await register({
-        ФИО: formData.ФИО.trim(),
+        ФИО: normalizeFIO(formData.ФИО),
         Телефон: formData.Телефон,
         Почта: formData.Почта || '',
         Пароль: formData.Пароль
