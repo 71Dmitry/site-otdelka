@@ -7,6 +7,8 @@ function read(path) {
 }
 
 const api = read("frontend/src/api/index.js");
+const frontendPackage = JSON.parse(read("frontend/package.json"));
+const setupProxy = read("frontend/src/setupProxy.js");
 assert.match(
   api,
   /process\.env\.REACT_APP_API_URL\s*\|\|\s*["']\/api["']/,
@@ -16,6 +18,20 @@ assert.doesNotMatch(
   api,
   /http:\/\/localhost:5000\/api/,
   "frontend production build must not call localhost:5000"
+);
+assert.ok(
+  !Object.prototype.hasOwnProperty.call(frontendPackage, "proxy"),
+  "frontend package.json should not use CRA string proxy because it can break allowedHosts on servers"
+);
+assert.match(
+  setupProxy,
+  /app\.use\(\s*['"]\/api['"]/,
+  "frontend dev server should proxy /api when running without Docker"
+);
+assert.match(
+  setupProxy,
+  /process\.env\.REACT_APP_API_PROXY\s*\|\|\s*['"]http:\/\/localhost:5000['"]/,
+  "frontend dev proxy should default to the local backend"
 );
 
 const server = read("backend/server.js");
