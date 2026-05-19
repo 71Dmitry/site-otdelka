@@ -35,6 +35,10 @@ assert.match(
 );
 
 const server = read("backend/server.js");
+assert.ok(
+  !fs.existsSync("backend/add_schedule.js"),
+  "legacy add_schedule.js should stay removed because it is not referenced and can delete schedule data"
+);
 assert.match(
   server,
   /process\.env\.PORT\s*\|\|\s*5000/,
